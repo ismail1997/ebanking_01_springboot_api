@@ -1,18 +1,16 @@
 package com.ismail.ebankingbackend;
 
 import com.ismail.ebankingbackend.entities.*;
-import com.ismail.ebankingbackend.enums.AccountStatus;
 import com.ismail.ebankingbackend.enums.OperationType;
-import com.ismail.ebankingbackend.repositories.IAccountOperationRepository;
-import com.ismail.ebankingbackend.repositories.IBankAccountRepository;
-import com.ismail.ebankingbackend.repositories.ICustomerRepository;
+import com.ismail.ebankingbackend.exceptions.CustomerNotFoundException;
+import com.ismail.ebankingbackend.services.IBankAccountService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
 import java.util.Date;
-import java.util.UUID;
+import java.util.List;
 import java.util.stream.Stream;
 
 @SpringBootApplication
@@ -24,51 +22,37 @@ public class EbankingBackendApplication {
 
 
     @Bean
-    CommandLineRunner start(ICustomerRepository customerRepository, IBankAccountRepository bankAccountRepository, IAccountOperationRepository accountOperationRepository){
+    CommandLineRunner start(IBankAccountService bankAccountService) {
         return args -> {
-            Stream.of("Ismail","John","Smith").forEach(name->{
-                Customer customer= Customer.builder()
+            Stream.of("Ismail", "John", "Smith").forEach(name -> {
+                Customer customer = Customer.builder()
                         .name(name)
-                        .email(name+"@gmail.com")
+                        .email(name + "@gmail.com")
                         .build();
-                customerRepository.save(customer);
+                bankAccountService.saveCustomer(customer);
             });
 
-            customerRepository.findAll().forEach(customer -> {
-                CurrentAccount currentAccount = new CurrentAccount();
-                currentAccount.setId(UUID.randomUUID().toString());
-                currentAccount.setBalance(Math.random()*90000);
-                currentAccount.setStatus(AccountStatus.CREATED);
-                currentAccount.setCustomer(customer);
-                currentAccount.setOverDraft(800);
-                currentAccount.setCreatedAt(new Date());
+            bankAccountService.listCustomers().forEach(customer -> {
 
-                bankAccountRepository.save(currentAccount);
-
-                SavingAccount savingAccount = new SavingAccount();
-                savingAccount.setId(UUID.randomUUID().toString());
-                savingAccount.setBalance(Math.random()*90000);
-                savingAccount.setStatus(AccountStatus.CREATED);
-                savingAccount.setCustomer(customer);
-                savingAccount.setInterestRate(5.5);
-                savingAccount.setCreatedAt(new Date());
-
-                bankAccountRepository.save(savingAccount);
-
-            });
-
-            bankAccountRepository.findAll().forEach(bankAccount -> {
-                for(int i =0 ; i<10 ; i++)
-                {
-                    AccountOperation accountOperation = AccountOperation.builder()
-                            .bankAccount(bankAccount)
-                            .amount(Math.random()*12000)
-                            .type(Math.random()>0.5? OperationType.DEBIT:OperationType.CREDIT)
-                            .operationDate(new Date())
-                            .build();
-                    accountOperationRepository.save(accountOperation);
+                try {
+                    bankAccountService.saveCurrentBankAccount(Math.random() * 9000, 700, customer.getId());
+                    bankAccountService.saveSavingBankAccount(Math.random() * 9000, 5.5, customer.getId());
+                    List<BankAccount> bankAccounts = bankAccountService.listBankAccounts();
+                    for(BankAccount bankAccount : bankAccounts)
+                    {
+                        for(int i=0;i<10;i++)
+                        {
+                            bankAccountService.credit(bankAccount.getId(), 12000,"Credit");
+                            bankAccountService.debit(bankAccount.getId(), 200,"Debit");
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
+
             });
+
+
         };
     }
 

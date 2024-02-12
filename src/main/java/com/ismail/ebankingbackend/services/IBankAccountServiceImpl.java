@@ -24,7 +24,7 @@ import java.util.UUID;
 @Transactional
 @Slf4j
 @AllArgsConstructor
-public class BankAccountServiceImpl implements BankAccountService{
+public class IBankAccountServiceImpl implements IBankAccountService {
 
     private ICustomerRepository customerRepository;
     private IBankAccountRepository bankAccountRepository;
@@ -97,6 +97,11 @@ public class BankAccountServiceImpl implements BankAccountService{
         BankAccount bankAccount = bankAccountRepository.findById(accountID)
                 .orElseThrow(()->new BankAccountNotFoundException("Could not find any bank account with such id"));
         return bankAccount;
+    }
+
+    @Override
+    public List<BankAccount> listBankAccounts() {
+        return bankAccountRepository.findAll();
     }
 
     @Override
