@@ -233,4 +233,16 @@ public class BankAccountServiceImpl implements IBankAccountService {
     }
 
 
+    @Override
+    public List<CustomerDTO> searchCustomers(String keyword)
+    {
+        List<CustomerDTO> customerDTOS = customerRepository.findByNameContains(keyword)
+                .stream()
+                .map(customer -> dtoMapper.fromCustomer(customer))
+                .collect(Collectors.toList());
+
+        return customerDTOS;
+    }
+
+
 }

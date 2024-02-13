@@ -26,6 +26,11 @@ public class CustomerRestController {
         return ResponseEntity.ok().body(this.bankAccountService.listCustomers());
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<List<CustomerDTO>> getAll(@RequestParam(name = "keyword",defaultValue = "") String keyword){
+        return ResponseEntity.ok().body(this.bankAccountService.searchCustomers(keyword));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<CustomerDTO> getCustomerById(@PathVariable("id") Long customerID) throws CustomerNotFoundException {
         return ResponseEntity.ok().body(this.bankAccountService.getCustomerByID(customerID));
