@@ -1,10 +1,10 @@
 package com.ismail.ebankingbackend.services;
 
+import com.ismail.ebankingbackend.dtos.BankAccountDTO;
+import com.ismail.ebankingbackend.dtos.CurrentBankAccountDTO;
 import com.ismail.ebankingbackend.dtos.CustomerDTO;
+import com.ismail.ebankingbackend.dtos.SavingBankAccountDTO;
 import com.ismail.ebankingbackend.entities.BankAccount;
-import com.ismail.ebankingbackend.entities.CurrentAccount;
-import com.ismail.ebankingbackend.entities.Customer;
-import com.ismail.ebankingbackend.entities.SavingAccount;
 import com.ismail.ebankingbackend.exceptions.BalanceNotSufficientException;
 import com.ismail.ebankingbackend.exceptions.BankAccountNotFoundException;
 import com.ismail.ebankingbackend.exceptions.CustomerNotFoundException;
@@ -19,10 +19,10 @@ public interface IBankAccountService {
     void deleteCustomer(Long id);
 
     CustomerDTO getCustomerByID(Long id) throws CustomerNotFoundException;
-    CurrentAccount saveCurrentBankAccount(double initialBalance, double overDraft, Long customerID) throws CustomerNotFoundException;
-    SavingAccount saveSavingBankAccount(double initialBalance, double interestRate, Long customerID) throws CustomerNotFoundException;
+    CurrentBankAccountDTO saveCurrentBankAccount(double initialBalance, double overDraft, Long customerID) throws CustomerNotFoundException;
+    SavingBankAccountDTO saveSavingBankAccount(double initialBalance, double interestRate, Long customerID) throws CustomerNotFoundException;
     List<CustomerDTO> listCustomers();
-    BankAccount getBankAccountByID(String accountID) throws BankAccountNotFoundException;
+    BankAccountDTO getBankAccountByID(String accountID) throws BankAccountNotFoundException;
     List<BankAccount> listBankAccounts();
     void debit(String accountID, double amount,String description) throws BankAccountNotFoundException, BalanceNotSufficientException;
     void credit(String accountID,double amount, String description) throws BankAccountNotFoundException;

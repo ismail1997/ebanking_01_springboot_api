@@ -1,6 +1,9 @@
 package com.ismail.ebankingbackend.services;
 
+import com.ismail.ebankingbackend.dtos.BankAccountDTO;
+import com.ismail.ebankingbackend.dtos.CurrentBankAccountDTO;
 import com.ismail.ebankingbackend.dtos.CustomerDTO;
+import com.ismail.ebankingbackend.dtos.SavingBankAccountDTO;
 import com.ismail.ebankingbackend.entities.*;
 
 import com.ismail.ebankingbackend.enums.AccountStatus;
@@ -66,7 +69,7 @@ public class IBankAccountServiceImpl implements IBankAccountService {
     }
 
     @Override
-    public CurrentAccount saveCurrentBankAccount(double initialBalance,double overDraft, Long customerID) throws CustomerNotFoundException {
+    public CurrentBankAccountDTO saveCurrentBankAccount(double initialBalance, double overDraft, Long customerID) throws CustomerNotFoundException {
         log.info("Saving new current account");
         CurrentAccount bankAccount=new CurrentAccount();
 
@@ -83,14 +86,11 @@ public class IBankAccountServiceImpl implements IBankAccountService {
             bankAccount.setCustomer(customer);
         }
 
-
-
-
-        return bankAccountRepository.save(bankAccount);
+        return dtoMapper.fromCurrentAccount(bankAccountRepository.save(bankAccount));
     }
 
     @Override
-    public SavingAccount saveSavingBankAccount(double initialBalance, double interestRate, Long customerID) throws CustomerNotFoundException {
+    public SavingBankAccountDTO saveSavingBankAccount(double initialBalance, double interestRate, Long customerID) throws CustomerNotFoundException {
         log.info("Saving new saving account");
         SavingAccount bankAccount=new SavingAccount();
 
@@ -106,7 +106,7 @@ public class IBankAccountServiceImpl implements IBankAccountService {
         }else{
             bankAccount.setCustomer(customer);
         }
-        return bankAccountRepository.save(bankAccount);
+        return dtoMapper.fromSavingBankAccount( bankAccountRepository.save(bankAccount));
     }
 
     @Override
@@ -120,10 +120,17 @@ public class IBankAccountServiceImpl implements IBankAccountService {
     }
 
     @Override
-    public BankAccount getBankAccountByID(String accountID) throws BankAccountNotFoundException{
+    public BankAccountDTO getBankAccountByID(String accountID) throws BankAccountNotFoundException{
         BankAccount bankAccount = bankAccountRepository.findById(accountID)
                 .orElseThrow(()->new BankAccountNotFoundException("Could not find any bank account with such id"));
-        return bankAccount;
+        if(bankAccount instanceof SavingAccount){
+            SavingAccount savingAccount = (SavingAccount) bankAccount;
+            return dtoMapper.fromSavingBankAccount(savingAccount);
+        }else{
+            CurrentAccount currentAccount = (CurrentAccount) bankAccount;
+            return dtoMapper.fromCurrentAccount(currentAccount);
+        }
+
     }
 
     @Override
@@ -133,7 +140,8 @@ public class IBankAccountServiceImpl implements IBankAccountService {
 
     @Override
     public void debit(String accountID, double amount, String description) throws BankAccountNotFoundException, BalanceNotSufficientException {
-        BankAccount bankAccount=getBankAccountByID(accountID);
+        BankAccount bankAccount = bankAccountRepository.findById(accountID)
+                .orElseThrow(()->new BankAccountNotFoundException("Could not find any bank account with such id"));
         if(bankAccount.getBalance()<amount){
          throw new BalanceNotSufficientException("Balance not sufficient")   ;
         }
@@ -155,7 +163,8 @@ public class IBankAccountServiceImpl implements IBankAccountService {
 
     @Override
     public void credit(String accountID, double amount, String description) throws BankAccountNotFoundException {
-        BankAccount bankAccount=getBankAccountByID(accountID);
+        BankAccount bankAccount = bankAccountRepository.findById(accountID)
+                .orElseThrow(()->new BankAccountNotFoundException("Could not find any bank account with such id"));
 
         AccountOperation accountOperation = AccountOperation.builder()
                 .type(OperationType.CREDIT)
