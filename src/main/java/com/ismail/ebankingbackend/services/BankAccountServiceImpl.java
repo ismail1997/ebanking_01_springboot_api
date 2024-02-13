@@ -1,9 +1,6 @@
 package com.ismail.ebankingbackend.services;
 
-import com.ismail.ebankingbackend.dtos.BankAccountDTO;
-import com.ismail.ebankingbackend.dtos.CurrentBankAccountDTO;
-import com.ismail.ebankingbackend.dtos.CustomerDTO;
-import com.ismail.ebankingbackend.dtos.SavingBankAccountDTO;
+import com.ismail.ebankingbackend.dtos.*;
 import com.ismail.ebankingbackend.entities.*;
 
 import com.ismail.ebankingbackend.enums.AccountStatus;
@@ -17,6 +14,8 @@ import com.ismail.ebankingbackend.repositories.IBankAccountRepository;
 import com.ismail.ebankingbackend.repositories.ICustomerRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,7 +29,7 @@ import java.util.stream.Collectors;
 @Transactional
 @Slf4j
 @AllArgsConstructor
-public class IBankAccountServiceImpl implements IBankAccountService {
+public class BankAccountServiceImpl implements IBankAccountService {
 
     private ICustomerRepository customerRepository;
     private IBankAccountRepository bankAccountRepository;
@@ -134,8 +133,18 @@ public class IBankAccountServiceImpl implements IBankAccountService {
     }
 
     @Override
-    public List<BankAccount> listBankAccounts() {
-        return bankAccountRepository.findAll();
+    public List<BankAccountDTO> listBankAccounts() {
+        List<BankAccount> bankAccounts = bankAccountRepository.findAll();
+
+        List<BankAccountDTO> bankAccountDTOS = bankAccounts.stream().map(bankAccount -> {
+            if (bankAccount instanceof CurrentAccount) {
+                return dtoMapper.fromCurrentAccount((CurrentAccount) bankAccount);
+            } else {
+                return dtoMapper.fromSavingBankAccount((SavingAccount) bankAccount);
+            }
+        }).collect(Collectors.toList());
+
+        return bankAccountDTOS;
     }
 
     @Override
@@ -186,4 +195,42 @@ public class IBankAccountServiceImpl implements IBankAccountService {
         debit(accountIdSource,amount,"Transfer to "+accountIdDestination);
         credit(accountIdDestination,amount,"Transfer from "+accountIdSource);
     }
+
+
+    @Override
+    public List<AccountOperationDTO> accountHistory(String accountID){
+        List<AccountOperation> accountOperations = accountOperationRepository.findByBankAccountId(accountID);
+        return accountOperations.stream().map(accountOperation -> {
+            return   dtoMapper.fromAccountOperation(accountOperation);
+        }).collect(Collectors.toList());
+    }
+
+    @Override
+    public AccountHistoryDTO getAccountHistory(String id, int page, int size) throws BankAccountNotFoundException {
+
+        BankAccount bankAccount = bankAccountRepository.findById(id).orElse(null);
+
+        if(bankAccount==null){
+            throw new BankAccountNotFoundException("Can not find any account ");
+        }
+
+        Page<AccountOperation> accountOperations = accountOperationRepository.findByBankAccountId(id, PageRequest.of(page, size));
+        AccountHistoryDTO accountHistoryDTO = new AccountHistoryDTO();
+
+        List<AccountOperationDTO> accountOperationDTOS = accountOperations.getContent().stream().map(accountOperation -> {
+            return dtoMapper.fromAccountOperation(accountOperation);
+        }).collect(Collectors.toList());
+
+        accountHistoryDTO.setAccountOperationDTOS(accountOperationDTOS);
+        accountHistoryDTO.setAccountId(bankAccount.getId());
+        accountHistoryDTO.setBalance(bankAccount.getBalance());
+        accountHistoryDTO.setCurrentPage(page);
+        accountHistoryDTO.setPageSize(size);
+        accountHistoryDTO.setTotalPages(accountOperations.getTotalPages());
+
+
+        return accountHistoryDTO;
+    }
+
+
 }

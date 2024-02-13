@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.Date;
 
-@Data @AllArgsConstructor @NoArgsConstructor
+@Data
 public  class CurrentBankAccountDTO extends BankAccountDTO {
     private String id;
     private double balance;

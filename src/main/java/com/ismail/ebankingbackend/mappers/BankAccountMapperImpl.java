@@ -1,8 +1,10 @@
 package com.ismail.ebankingbackend.mappers;
 
+import com.ismail.ebankingbackend.dtos.AccountOperationDTO;
 import com.ismail.ebankingbackend.dtos.CurrentBankAccountDTO;
 import com.ismail.ebankingbackend.dtos.CustomerDTO;
 import com.ismail.ebankingbackend.dtos.SavingBankAccountDTO;
+import com.ismail.ebankingbackend.entities.AccountOperation;
 import com.ismail.ebankingbackend.entities.CurrentAccount;
 import com.ismail.ebankingbackend.entities.Customer;
 import com.ismail.ebankingbackend.entities.SavingAccount;
@@ -29,6 +31,7 @@ public class BankAccountMapperImpl {
         SavingBankAccountDTO savingBankAccountDTO = new SavingBankAccountDTO();
         BeanUtils.copyProperties(savingAccount,savingBankAccountDTO);
         savingBankAccountDTO.setCustomerDTO(fromCustomer(savingAccount.getCustomer()));
+        savingBankAccountDTO.setType(savingAccount.getClass().getSimpleName());
         return savingBankAccountDTO;
     }
 
@@ -44,6 +47,7 @@ public class BankAccountMapperImpl {
         CurrentBankAccountDTO currentBankAccountDTO = new CurrentBankAccountDTO();
         BeanUtils.copyProperties(currentAccount,currentBankAccountDTO);
         currentBankAccountDTO.setCustomerDTO(fromCustomer(currentAccount.getCustomer()));
+        currentBankAccountDTO.setType(currentAccount.getClass().getSimpleName());
         return currentBankAccountDTO;
     }
 
@@ -55,5 +59,11 @@ public class BankAccountMapperImpl {
         return currentAccount;
     }
 
+
+    public AccountOperationDTO fromAccountOperation(AccountOperation accountOperation){
+        AccountOperationDTO accountOperationDTO = new AccountOperationDTO();
+        BeanUtils.copyProperties(accountOperation,accountOperationDTO);
+        return accountOperationDTO;
+    }
 
 }
