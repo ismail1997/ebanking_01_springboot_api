@@ -1,5 +1,6 @@
 package com.ismail.ebankingbackend.services;
 
+import com.ismail.ebankingbackend.dtos.CustomerDTO;
 import com.ismail.ebankingbackend.entities.*;
 
 import com.ismail.ebankingbackend.enums.AccountStatus;
@@ -7,6 +8,7 @@ import com.ismail.ebankingbackend.enums.OperationType;
 import com.ismail.ebankingbackend.exceptions.BalanceNotSufficientException;
 import com.ismail.ebankingbackend.exceptions.BankAccountNotFoundException;
 import com.ismail.ebankingbackend.exceptions.CustomerNotFoundException;
+import com.ismail.ebankingbackend.mappers.BankAccountMapperImpl;
 import com.ismail.ebankingbackend.repositories.IAccountOperationRepository;
 import com.ismail.ebankingbackend.repositories.IBankAccountRepository;
 import com.ismail.ebankingbackend.repositories.ICustomerRepository;
@@ -18,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -30,17 +33,36 @@ public class IBankAccountServiceImpl implements IBankAccountService {
     private IBankAccountRepository bankAccountRepository;
     private IAccountOperationRepository accountOperationRepository;
 
+    private BankAccountMapperImpl dtoMapper;
+
 
 
     @Override
-    public Customer saveCustomer(Customer customer) {
+    public CustomerDTO saveCustomer(CustomerDTO customerDTO) {
         log.info("Saving new customer");
-        return customerRepository.save(customer);
+        Customer customer = dtoMapper.fromCustomerDto(customerDTO);
+        Customer savedCustomer = customerRepository.save(customer);
+        return dtoMapper.fromCustomer(savedCustomer);
     }
 
     @Override
-    public Customer getCustomerByID(Long id) throws CustomerNotFoundException {
-        return customerRepository.findById(id).orElseThrow(()->new CustomerNotFoundException("Can not find customer"));
+    public CustomerDTO updateCustomer(CustomerDTO customerDTO) {
+        log.info("Updating a customer");
+        Customer customer = dtoMapper.fromCustomerDto(customerDTO);
+        Customer savedCustomer = customerRepository.save(customer);
+        return dtoMapper.fromCustomer(savedCustomer);
+    }
+
+    @Override
+    public void deleteCustomer(Long id)
+    {
+        customerRepository.deleteById(id);
+    }
+
+    @Override
+    public CustomerDTO getCustomerByID(Long id) throws CustomerNotFoundException {
+        Customer customer = customerRepository.findById(id).orElseThrow(()->new CustomerNotFoundException("Can not find customer"));
+        return dtoMapper.fromCustomer(customer);
     }
 
     @Override
@@ -54,7 +76,7 @@ public class IBankAccountServiceImpl implements IBankAccountService {
         bankAccount.setOverDraft(overDraft);
         bankAccount.setStatus(AccountStatus.CREATED);
 
-        Customer customer = getCustomerByID(customerID);
+        Customer customer = customerRepository.findById(customerID).orElseThrow(()->new CustomerNotFoundException("Can not find customer"));
         if(customer==null){
             throw new CustomerNotFoundException("Customer not found");
         }else{
@@ -78,7 +100,7 @@ public class IBankAccountServiceImpl implements IBankAccountService {
         bankAccount.setInterestRate(interestRate);
         bankAccount.setStatus(AccountStatus.CREATED);
 
-        Customer customer = getCustomerByID(customerID);
+        Customer customer = customerRepository.findById(customerID).orElseThrow(()->new CustomerNotFoundException("Can not find customer"));
         if(customer==null){
             throw new CustomerNotFoundException("Customer not found");
         }else{
@@ -88,8 +110,13 @@ public class IBankAccountServiceImpl implements IBankAccountService {
     }
 
     @Override
-    public List<Customer> listCustomers() {
-        return customerRepository.findAll();
+    public List<CustomerDTO> listCustomers() {
+        List<Customer> customers = customerRepository.findAll();
+        List<CustomerDTO> customerDTOS = customers.stream().map(customer -> {
+           return  dtoMapper.fromCustomer(customer);
+        }).collect(Collectors.toList());
+
+        return customerDTOS;
     }
 
     @Override

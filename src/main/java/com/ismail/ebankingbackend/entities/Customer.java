@@ -1,5 +1,6 @@
 package com.ismail.ebankingbackend.entities;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,6 +20,8 @@ public class Customer {
     private Long id;
     private String name;
     private String email;
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @OneToMany(mappedBy = "customer")
     private List<BankAccount> bankAccounts;
 }

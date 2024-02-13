@@ -1,5 +1,6 @@
 package com.ismail.ebankingbackend.entities;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ismail.ebankingbackend.enums.AccountStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -26,6 +27,8 @@ public  class BankAccount {
     private AccountStatus status;
     @ManyToOne
     private Customer customer;
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @OneToMany(mappedBy = "bankAccount")
     private List<AccountOperation> accountOperations;
 }

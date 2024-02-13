@@ -1,5 +1,6 @@
 package com.ismail.ebankingbackend;
 
+import com.ismail.ebankingbackend.dtos.CustomerDTO;
 import com.ismail.ebankingbackend.entities.*;
 import com.ismail.ebankingbackend.enums.OperationType;
 import com.ismail.ebankingbackend.exceptions.CustomerNotFoundException;
@@ -25,7 +26,7 @@ public class EbankingBackendApplication {
     CommandLineRunner start(IBankAccountService bankAccountService) {
         return args -> {
             Stream.of("Ismail", "John", "Smith").forEach(name -> {
-                Customer customer = Customer.builder()
+                CustomerDTO customer = CustomerDTO.builder()
                         .name(name)
                         .email(name + "@gmail.com")
                         .build();
