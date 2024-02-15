@@ -55,20 +55,25 @@ public class BankAccountRestController {
 
 
     @PostMapping("/debit")
-    public void debit(@RequestBody DebitForm debitForm) throws BankAccountNotFoundException, BalanceNotSufficientException {
+    public DebitForm debit(@RequestBody DebitForm debitForm) throws BankAccountNotFoundException, BalanceNotSufficientException {
         bankAccountService.debit(debitForm.getAccountID(), debitForm.getAmount(), debitForm.getDescription());
+        return debitForm;
     }
 
 
     @PostMapping("/credit")
-    public void credit(@RequestBody CreditForm creditForm) throws BankAccountNotFoundException {
+    public CreditForm credit(@RequestBody CreditForm creditForm) throws BankAccountNotFoundException {
         bankAccountService.credit(creditForm.getAccountID(), creditForm.getAmount(), creditForm.getDescription());
+        return creditForm;
     }
 
     @PostMapping("/transfer")
-    public void transfer(@RequestBody TransferForm transferForm) throws BankAccountNotFoundException, BalanceNotSufficientException {
+    public TransferForm transfer(@RequestBody TransferForm transferForm) throws BankAccountNotFoundException, BalanceNotSufficientException {
         bankAccountService.transfer(transferForm.getAccountIdSource(),transferForm.getAccountIdDestination(),transferForm.getAmount());
+        return transferForm;
     }
+
+
 
 
 

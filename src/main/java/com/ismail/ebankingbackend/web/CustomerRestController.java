@@ -1,5 +1,6 @@
 package com.ismail.ebankingbackend.web;
 
+import com.ismail.ebankingbackend.dtos.BankAccountDTO;
 import com.ismail.ebankingbackend.dtos.CustomerDTO;
 import com.ismail.ebankingbackend.entities.Customer;
 import com.ismail.ebankingbackend.exceptions.CustomerNotFoundException;
@@ -28,7 +29,7 @@ public class CustomerRestController {
 
     @GetMapping("/search")
     public ResponseEntity<List<CustomerDTO>> getAll(@RequestParam(name = "keyword",defaultValue = "") String keyword){
-        return ResponseEntity.ok().body(this.bankAccountService.searchCustomers(keyword));
+        return ResponseEntity.ok().body(this.bankAccountService.searchCustomers("%"+keyword+"%"));
     }
 
     @GetMapping("/{id}")
@@ -55,6 +56,9 @@ public class CustomerRestController {
         return ResponseEntity.noContent().build();
     }
 
-
+    @GetMapping("/{id}/accounts")
+    public ResponseEntity<List<BankAccountDTO>>getAccountsOfCustomer(@PathVariable("id") Long id){
+        return ResponseEntity.ok().body(this.bankAccountService.listBankAccountOfCustomer(id));
+    }
 
 }

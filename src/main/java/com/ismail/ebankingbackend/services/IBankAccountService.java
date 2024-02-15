@@ -1,6 +1,7 @@
 package com.ismail.ebankingbackend.services;
 
 import com.ismail.ebankingbackend.dtos.*;
+import com.ismail.ebankingbackend.entities.BankAccount;
 import com.ismail.ebankingbackend.exceptions.BalanceNotSufficientException;
 import com.ismail.ebankingbackend.exceptions.BankAccountNotFoundException;
 import com.ismail.ebankingbackend.exceptions.CustomerNotFoundException;
@@ -29,4 +30,6 @@ public interface IBankAccountService {
     AccountHistoryDTO getAccountHistory(String id, int page, int size) throws BankAccountNotFoundException;
 
     List<CustomerDTO> searchCustomers(String keyword);
+
+    List<BankAccountDTO> listBankAccountOfCustomer(Long id);
 }

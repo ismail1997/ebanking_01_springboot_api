@@ -13,6 +13,6 @@ import java.util.List;
 public interface IAccountOperationRepository extends JpaRepository<AccountOperation,Long> {
     List<AccountOperation> findByBankAccountId(String id);
 
-    @Query("select operation from AccountOperation  operation where operation.bankAccount.id =?1")
+    @Query("select operation from AccountOperation  operation where operation.bankAccount.id =?1 order by operation.operationDate desc ")
     Page<AccountOperation> findByBankAccountId(String id, Pageable pageable);
 }

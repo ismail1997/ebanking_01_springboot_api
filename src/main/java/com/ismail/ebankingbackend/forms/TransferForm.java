@@ -10,4 +10,5 @@ public class TransferForm {
     private String accountIdSource;
     private String accountIdDestination;
     private double amount;
+    private String description;
 }

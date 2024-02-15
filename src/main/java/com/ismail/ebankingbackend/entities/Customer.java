@@ -22,6 +22,6 @@ public class Customer {
     private String email;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    @OneToMany(mappedBy = "customer")
+    @OneToMany(mappedBy = "customer",cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BankAccount> bankAccounts;
 }
